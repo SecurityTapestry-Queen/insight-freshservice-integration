@@ -62,7 +62,7 @@ def updateLastTime():
     # print('Updated to current time')
 
 def postTicketToFS():
-    webhook_url = 'https://securitytapestry.freshservice.com/api/v2/tickets'
+    url = 'https://securitytapestry.freshservice.com/api/v2/tickets'
 
     idr_priority = 1
     if item["priority"] == 'MEDIUM':
@@ -80,7 +80,7 @@ def postTicketToFS():
     "priority":idr_priority
     }
     global ticketID
-    r = requests.post(webhook_url, auth=(FS_API, 'X'), data=json.dumps(data), headers= {'Content-Type': 'application/json'})
+    r = requests.post(url, auth=(FS_API, 'X'), data=json.dumps(data), headers= {'Content-Type': 'application/json'})
     ticketID = r.json()["ticket"]["id"]
     print("Posted ticket #" + str(ticketID))
     # print(ticketID)
