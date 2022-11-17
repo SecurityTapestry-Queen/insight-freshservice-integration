@@ -1,5 +1,7 @@
 import requests
 import json
+import sys
+import os
 from datetime import datetime
 
 global lasttimedata
@@ -7,10 +9,13 @@ global investigations
 global item
 global commentdata
 global ticketID
+global c
 
-API_KEY = "8ea43599-e617-4c6a-a106-5d9984df1332"
+IDR_API = os.getenv('IDR_API')
+FS_API = os.getenv('FS_API')
 
 def whenWasTheLastTime():
+    print("Obtaining Last Time Ran")
     lasttime = open("lasttime.txt", "r")
     global lasttimedata
     lasttimedata = lasttime.read()
@@ -18,9 +23,10 @@ def whenWasTheLastTime():
     print("Last Check: " + lasttimedata)
 
 def getInsightInvestigations():
+    print("Getting Open Investigations")
     url = 'https://us2.api.insight.rapid7.com/idr/v2/investigations'
     headers = {
-    "X-Api-Key": API_KEY,
+    "X-Api-Key": IDR_API,
     "Accept-version": "investigations-preview"
     }
     params = {
@@ -35,6 +41,7 @@ def getInsightInvestigations():
     investigations = r.json()["data"]
 
 def checkForNew():
+    print("Anything New?")
     for i in investigations:
         created = datetime.strptime(i["created_time"], "%Y-%m-%dT%H:%M:%S.%fZ")
         checktime = datetime.strptime(lasttimedata, "%Y-%m-%dT%H:%M:%S.%fZ")
@@ -73,16 +80,17 @@ def postTicketToFS():
     "priority":idr_priority
     }
     global ticketID
-    r = requests.post(webhook_url, auth=('p4CWhwgKyWmyrJrKWJ', 'X'), data=json.dumps(data), headers= {'Content-Type': 'application/json'})
+    r = requests.post(webhook_url, auth=(FS_API, 'X'), data=json.dumps(data), headers= {'Content-Type': 'application/json'})
     ticketID = r.json()["ticket"]["id"]
-    print(ticketID)
+    print("Posted ticket #" + str(ticketID))
+    # print(ticketID)
     # print(ticketResponse["ticket"]["id"])
     # print(data)
 
 def getInvestigationComments(id):
     url = 'https://us2.api.insight.rapid7.com/idr/v1/comments'
     headers = {
-    "X-Api-Key": API_KEY,
+    "X-Api-Key": IDR_API,
     "Accept-version": "comments-preview"
     }
     params = {
@@ -94,6 +102,7 @@ def getInvestigationComments(id):
     global commentdata
     comments = r.json()
     commentdata = comments["data"]
+    global c
     for c in commentdata:
         created = datetime.strptime(c["created_time"], "%Y-%m-%dT%H:%M:%S.%fZ")
         checktime = datetime.strptime(lasttimedata, "%Y-%m-%dT%H:%M:%S.%fZ")
@@ -103,17 +112,37 @@ def getInvestigationComments(id):
         elif c["body"] is None:
             continue
         else:
-            print(
-                c["created_time"] + "\n"
-                + c["creator"]["name"] + "\n"
-                + c["body"]
-                )
+            postCommentsToFS(str(ticketID))
+            # print(
+            #     c["created_time"] + "\n"
+            #     + c["creator"]["name"] + "\n"
+            #     + c["body"]
+            #     )
+
+def postCommentsToFS(fsID):
+    webhook_url = 'https://securitytapestry.freshservice.com/api/v2/tickets/' + fsID + '/notes'
+
+    data = {
+        "body": c["body"],
+        "private": False
+    }
+
+    requests.post(webhook_url, auth=(FS_API, 'X'), data=json.dumps(data), headers= {'Content-Type': 'application/json'})
+    print("Posted comment to ticket #" + str(fsID))
+
+def functionCheck():
+    print("Performing Function Check")
+    if sys.version_info < (3, 10):
+        sys.exit("Python 3.10+ Needed")
+    if(str(IDR_API) == "None"):
+        sys.exit("IDR_API key missing")
+    if(str(FS_API) == "None"):
+        sys.exit("FS_API key missing")
+    print("Function Check Succeeded")
 
 # Execution Block
-print("whenWasTheLastTime")
+functionCheck()
 whenWasTheLastTime()
-print("getInsightInvestigations")
 getInsightInvestigations()
-print("checkForNew")
 checkForNew()
-# updateLastTime()
+updateLastTime()
