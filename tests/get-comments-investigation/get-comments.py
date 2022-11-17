@@ -3,7 +3,7 @@ import requests
 def getInvestigationComments(id):
     url = 'https://us2.api.insight.rapid7.com/idr/v1/comments'
     headers = {
-    "X-Api-Key": "8ea43599-e617-4c6a-a106-5d9984df1332",
+    "X-Api-Key": "x",
     "Accept-version": "comments-preview"
     }
     params = {

@@ -7,7 +7,7 @@ ID = "66"
 def getInvestigationComments(id):
     url = 'https://us2.api.insight.rapid7.com/idr/v1/comments'
     headers = {
-    "X-Api-Key": "8ea43599-e617-4c6a-a106-5d9984df1332",
+    "X-Api-Key": "x",
     "Accept-version": "comments-preview"
     }
     params = {
@@ -33,7 +33,7 @@ def postCommentsToFS(fsID):
         "private": False
     }
 
-    requests.post(webhook_url, auth=('p4CWhwgKyWmyrJrKWJ', 'X'), data=json.dumps(data), headers= {'Content-Type': 'application/json'})
+    requests.post(webhook_url, auth=('x', 'X'), data=json.dumps(data), headers= {'Content-Type': 'application/json'})
 
 
 getInvestigationComments(ticket)

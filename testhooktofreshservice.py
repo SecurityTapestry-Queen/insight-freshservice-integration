@@ -11,4 +11,4 @@ data = {
 "priority":1
 }
 
-requests.post(webhook_url, auth=('p4CWhwgKyWmyrJrKWJ', 'X'), data=json.dumps(data), headers= {'Content-Type': 'application/json'})
+requests.post(webhook_url, auth=('x', 'X'), data=json.dumps(data), headers= {'Content-Type': 'application/json'})
